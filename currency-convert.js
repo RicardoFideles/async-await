@@ -6,16 +6,28 @@
 
 const axios = require('axios');
 
-const getExchangeRate = (from, to) => {
-    return axios.get(`http://api.fixer.io/latest?base=${from}`).then((res) => {
-        return res.data.rates[to];
-    });
+const getExchangeRate = async (from, to) => {
+    try {
+        const response = await axios.get(`http://api.fixer.io/latest?base=${from}`);
+        const rate = response.data.rates[to];
+        if (rate) {
+            return rate;
+        } else {
+            throw new Error();
+        }
+    } catch (e) {
+        throw new Error(`Unable to get exchange rate for ${from} to ${to}`);
+    }
 }
 
-const getCountries = (currencyCode) => {
-    return axios.get(`https://restcountries.eu/rest/v2/currency/${currencyCode}`).then((response) =>{
+const getCountries = async (currencyCode) => {
+    try {
+        const response = await axios.get(`https://restcountries.eu/rest/v2/currency/${currencyCode}`);
         return response.data.map((country) => country.name);
-    });
+    } catch (e) {
+        throw new Error(`Unable to get contries to the currency code : ${currencyCode}`);
+    }
+    
 };
 
 const convertCurrency = (from, to , amount) => {
@@ -36,20 +48,22 @@ const convertCurrencyAlt = async (from, to , amount) => {
     return `${amount} ${from} is worth ${exchangeAmount} ${to}. ${to} can be used in the following countries ${countries.join(', ')}`;
 }
 
-getExchangeRate('USD', 'EUR').then((rate) => {
-    console.log(rate);
-});
+// getExchangeRate('USD', 'EUR').then((rate) => {
+//     console.log(rate);
+// });
 
-getCountries('CAD').then((countries) => {
-    console.log(countries);
-});
+// getCountries('CAD').then((countries) => {
+//     console.log(countries);
+// });
 
-convertCurrency('USD', 'CAD', 100).then((status) => {
+// convertCurrency('USD', 'CAD', 100).then((status) => {
+//     console.log(status);
+// });
+
+convertCurrencyAlt('USD', 'EUR', 100).then((status) => {
     console.log(status);
-});
-
-convertCurrencyAlt('USD', 'CAD', 100).then((status) => {
-    console.log(status);
+}).catch((e) => {
+    console.log(e.message);
 });
 
 
